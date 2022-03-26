@@ -6,3 +6,15 @@
   padding: 0;
   margin: 0;
 }
+
+html {
+  font-family: "Red Hat Mono", monospace;
+}
+
+.counter {
+  display: flex;
+  justify-content: center;
+  color: royalblue;
+  font-weight: 600;
+  font-size: 3rem;
+}

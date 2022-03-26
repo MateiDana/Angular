@@ -1,48 +1,12 @@
-<h1 class="header">{{ applicationTitle }}</h1>
-
-<!-- *ngFor - Angular structural directive -->
-<ul>
-  <li *ngFor="let hero of heroes; index as i" [class.hero--odd]="i % 2 === 0">
-    <!-- <span class="hero-id" id="idx-{{ i }}-id--{{ hero.id }}">{{
-      hero.id
-    }}</span> -->
-    <span class="hero-id" [id]="hero.id">{{ hero.id }}</span>
-    -
-    <span>{{ hero.name }}</span>
-    <p *ngIf="hero.realName">Declassified::: {{ hero.realName }}</p>
-    <!-- <button (click)="updateHero(hero)">Add --UPDATED flag</button> -->
-    <button (click)="editHero(hero)">Edit</button>
-    <button (click)="deleteHero(hero)">Delete</button>
-    <div class="form-container" *ngIf="hero === heroToBeEdited">
-      <form [formGroup]="editHeroForm">
-        <!-- <input
-          type="text"
-          name="hero-name"
-          placeholder="Hero name*"
-          [(ngModel)]="hero.name"
-        /> -->
-        <input
-          formControlName="heroName"
-          type="text"
-          name="hero-name"
-          placeholder="Hero name*"
-        />
-        <input
-          formControlName="heroRealName"
-          type="text"
-          name=""
-          placeholder="Real name"
-        />
-        <button
-          type="button"
-          (click)="updateHero($event)"
-          [disabled]="editHeroForm.invalid || !editHeroForm.dirty"
-        >
-          Update
-        </button>
-        <button type="button" (click)="cancelEditAction()">Cancel</button>
-      </form>
-    </div>
-  </li>
-</ul>
-<button (click)="addNewHero()">Add new Hero</button>
+<div class="main-container">
+  <app-universal-counter
+    [counterValue]="radioMessage"
+    [fromService]="fromService"
+    class="counter-container"
+  ></app-universal-counter>
+  <app-man-made-counter
+    [fromService]="fromService"
+    class="counter-container"
+  ></app-man-made-counter>
+  <app-alien-counter class="counter-container"></app-alien-counter>
+</div>

@@ -7,6 +7,18 @@
   color: white; */
 }
 
-.form-container {
-  margin: 0.5rem 0;
+.main-container {
+  display: flex;
+  justify-content: space-around;
+  column-gap: 1rem;
+  margin: 1rem;
+}
+
+.counter-container {
+  border: 2px solid royalblue;
+  border-radius: 4px;
+  display: flex;
+  justify-items: center;
+  flex-direction: column;
+  padding: 0.5rem;
 }

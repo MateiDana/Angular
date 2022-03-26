@@ -1,111 +1,50 @@
-import { Component, ViewEncapsulation } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
+import { distinctUntilChanged, tap } from 'rxjs/operators';
+import { CounterService } from './services/counter.service';
 
-interface NamedItem {
-  id: number;
-  name: string;
-}
-
-interface SuperPower extends NamedItem {}
-
-interface Weapon extends NamedItem {
-  description: string;
-}
-
-interface Hero extends NamedItem {
-  realName?: string;
-  superPowers?: SuperPower[];
-  weapons?: Weapon[];
-}
-
-// THE Controller
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  encapsulation: ViewEncapsulation.Emulated,
 })
-export class AppComponent {
-  applicationTitle = 'Title from AppComponent';
-  isEditing: boolean = false;
-  heroToBeEdited: Hero | null = null;
+export class AppComponent implements OnInit, OnDestroy {
+  fromService: number = -Infinity;
+  radioMessage: number = 0;
 
-  heroes: Hero[] = [
-    {
-      name: 'Hero 1',
-      id: 11,
-    },
-    {
-      name: 'Not so much of a Hero 2',
-      id: 12,
-      realName: 'Boris Johnson',
-    },
-    {
-      name: 'Hero 3',
-      id: 13,
-    },
-  ];
+  subscriptions$: Subscription = new Subscription();
+  // The cool way
+  radioMessage$: Observable<number> = this.counterService.signal$.pipe(
+    distinctUntilChanged(),
+    tap((message: number) => (this.radioMessage = message))
+  );
 
-  editHeroForm: FormGroup;
+  manualRadioMessage$: Observable<number> =
+    this.counterService.manualOverride$.pipe(
+      distinctUntilChanged(),
+      tap(console.log)
+    );
 
-  constructor() {
-    this.editHeroForm = new FormGroup({
-      heroName: new FormControl(null, Validators.required),
-      heroRealName: new FormControl(null),
-    });
+  constructor(private counterService: CounterService) {
+    this.fromService = this.counterService.valueFromService;
+
+    // this.counterService.signal$.subscribe(console.log);
   }
 
-  addNewHero() {
-    const lastEntry = this.heroes.at(-1)!;
-    const [_, heroNumber] = lastEntry.name.split(' ');
-    const newHero = {
-      id: lastEntry?.id + 1,
-      name: `Hero ${Number(heroNumber) + 1}`,
-    };
+  ngOnInit(): void {
+    // The old way
+    // this.subscriptions$.add(
+    //   this.counterService.signal$.subscribe((message: number) => {
+    //     this.radioMessage = message;
+    //   })
+    // );
 
-    this.heroes.push(newHero);
+    this.subscriptions$.add(this.radioMessage$.subscribe());
+    this.subscriptions$.add(this.manualRadioMessage$.subscribe());
   }
 
-  deleteHero(heroToBeDeleted: Hero): void {
-    console.log('hero to be deleted: ', heroToBeDeleted);
-    console.log(this.heroes.includes(heroToBeDeleted));
-
-    this.heroes.splice(this.heroes.indexOf(heroToBeDeleted), 1);
-
-    // this.heroes = this.heroes.filter((hero) => hero !== heroToBeDeleted);
-  }
-
-  editHero(hero: Hero): void {
-    console.log('hero to be edited: ', hero);
-    this.isEditing = true;
-    this.heroToBeEdited = hero;
-    this.editHeroForm.setValue({
-      heroName: hero.name,
-      heroRealName: hero.realName || '',
-    });
-
-    console.log(this.editHeroForm);
-  }
-
-  // updateHero(heroToBeUpdated: Hero): void {
-  //   heroToBeUpdated.name = `${heroToBeUpdated.name}--UPDATED`;
-  // }
-
-  updateHero(e: MouseEvent): void {
-    console.log(this.editHeroForm.value);
-    const { heroName: name, heroRealName: realName } = this.editHeroForm.value;
-
-    this.heroToBeEdited!.name = name;
-    this.heroToBeEdited!.realName = realName;
-    this.heroToBeEdited = null;
-  }
-
-  cancelEditAction(): void {
-    this.heroToBeEdited = null;
-    this.editHeroForm.reset();
-  }
-
-  nameToUppercase(name: string): void {
-    name.toUpperCase();
+  ngOnDestroy(): void {
+    // aici facem clean-up
+    this.subscriptions$.unsubscribe();
   }
 }
