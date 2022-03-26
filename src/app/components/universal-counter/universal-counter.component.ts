@@ -1,4 +1,6 @@
 import { Component, Input } from '@angular/core';
+import { RadioSignature } from 'src/app/enums/radio-signature.enum';
+import { CounterService } from 'src/app/services/counter.service';
 
 @Component({
   selector: 'app-universal-counter',
@@ -11,4 +13,10 @@ export class UniversalCounterComponent {
 
   @Input()
   fromService: number = -Infinity;
+
+  constructor(private counterService: CounterService) {}
+
+  manualOverrideSignalValue(): void {
+    this.counterService.manualOverride(RadioSignature.SECRET);
+  }
 }

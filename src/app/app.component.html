@@ -1,9 +1,14 @@
 <div class="main-container">
-  <app-universal-counter
-    [counterValue]="radioMessage"
-    [fromService]="fromService"
-    class="counter-container"
-  ></app-universal-counter>
+  <div>
+    <app-universal-counter
+      [counterValue]="radioMessage"
+      [fromService]="fromService"
+      class="counter-container"
+    ></app-universal-counter>
+    <app-transmission-log
+      [transmissionLogs]="transmissionLogs$ | async"
+    ></app-transmission-log>
+  </div>
   <app-man-made-counter
     [fromService]="fromService"
     class="counter-container"

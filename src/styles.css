@@ -11,10 +11,37 @@ html {
   font-family: "Red Hat Mono", monospace;
 }
 
+:root {
+  --color-success: #009944;
+  --color-error: #cf000f;
+}
+
 .counter {
   display: flex;
   justify-content: center;
   color: royalblue;
   font-weight: 600;
   font-size: 3rem;
+}
+
+.btn {
+  outline: none;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  max-width: fit-content;
+  align-self: flex-end;
+  margin: 1rem;
+}
+
+.btn-good {
+  outline: none;
+  background-color: #009944;
+  color: #fff;
+}
+
+.btn-bad {
+  outline: none;
+  background-color: var(--color-error);
+  color: #fff;
 }

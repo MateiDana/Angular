@@ -5,8 +5,12 @@ import {
   merge,
   Observable,
   Subject,
+  takeUntil,
   tap,
 } from 'rxjs';
+import { RadioSignature } from '../enums/radio-signature.enum';
+import { RadioSignal } from '../interfaces/radio-signal.interface';
+import { LoggingService } from './logging.service';
 
 // Observable data stream
 
@@ -14,44 +18,73 @@ import {
   providedIn: 'root',
 })
 export class CounterService {
+  readonly initialRadioSignal: RadioSignal = {
+    value: 0,
+    signature: RadioSignature.SECRET,
+  };
+
   valueFromService: number = 42;
   overrideValuesLog: number[] = [];
 
-  manualOverride$: Subject<number> = new Subject<number>();
-  private signalValue$: BehaviorSubject<number> = new BehaviorSubject(0);
+  electromagneticPulse$: Subject<void> = new Subject<void>();
+
+  manualOverride$: Subject<RadioSignal> = new Subject<RadioSignal>();
+  private signalValue$: BehaviorSubject<RadioSignal> = new BehaviorSubject(
+    this.initialRadioSignal
+  );
 
   // signal$: Observable<number> = interval(1000);
   // compozitie de stream-uri
-  signal$: Observable<number> = merge(
+  signal$: Observable<RadioSignal> = merge(
     this.signalValue$.asObservable(),
     this.manualOverride$.asObservable()
-  );
+  ).pipe(takeUntil(this.electromagneticPulse$));
 
-  constructor() {
+  constructor(private loggingService: LoggingService) {
     this.startTransmission();
   }
 
-  manualOverride(): void {
-    const overrideValue = this.getRandomSignalValue();
+  // make signature param optional for suckers who try to jam the transmission
+  manualOverride(signature: RadioSignature = RadioSignature.EXTERNAL): void {
+    const overrideSignal = this.getRandomSignalValue(signature);
 
-    this.overrideValuesLog.push(overrideValue);
-    this.manualOverride$.next(overrideValue);
-    this.signalValue$.next(overrideValue);
+    if (
+      signature !== RadioSignature.SECRET &&
+      !this.electromagneticPulse$.isStopped
+    ) {
+      const logMessage = `Intercepted transmission jam with value: ${overrideSignal.value} and signature: ${signature}`;
+      console.log(this.electromagneticPulse$);
+      this.overrideValuesLog.push(overrideSignal.value);
+      this.loggingService.log(logMessage);
+      return;
+    }
+
+    this.overrideValuesLog.push(overrideSignal.value);
+    this.manualOverride$.next(overrideSignal);
+    this.signalValue$.next(overrideSignal);
   }
 
   private startTransmission(): void {
     interval(1000)
       .pipe(
         tap(() => {
-          let currentSignalValue = this.signalValue$.getValue();
+          let currentSignal = this.signalValue$.getValue();
 
-          this.signalValue$.next(++currentSignalValue);
+          this.signalValue$.next({
+            ...currentSignal,
+            value: ++currentSignal.value,
+          });
         })
       )
       .subscribe();
   }
 
-  private getRandomSignalValue(): number {
-    return Math.floor(Math.random() * this.valueFromService);
+  private getRandomSignalValue(
+    signature: RadioSignature = RadioSignature.EXTERNAL
+  ): RadioSignal {
+    return {
+      value: Math.floor(Math.random() * this.valueFromService),
+      signature,
+    };
   }
 }

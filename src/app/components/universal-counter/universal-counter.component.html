@@ -2,4 +2,11 @@
 <div class="counter">
   <span>{{ counterValue }}</span>
 </div>
-<p>{{ fromService }}</p>
+<button
+  type="button"
+  (click)="manualOverrideSignalValue()"
+  class="btn btn-good"
+>
+  Override
+</button>
+<!-- <p>{{ fromService }}</p> -->

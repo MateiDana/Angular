@@ -1,7 +1,16 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
-import { distinctUntilChanged, tap } from 'rxjs/operators';
+import {
+  distinctUntilChanged,
+  tap,
+  filter,
+  map,
+  startWith,
+} from 'rxjs/operators';
+import { RadioSignature } from './enums/radio-signature.enum';
+import { RadioSignal } from './interfaces/radio-signal.interface';
 import { CounterService } from './services/counter.service';
+import { LoggingService } from './services/logging.service';
 
 @Component({
   selector: 'app-root',
@@ -15,6 +24,8 @@ export class AppComponent implements OnInit, OnDestroy {
   subscriptions$: Subscription = new Subscription();
   // The cool way
   radioMessage$: Observable<number> = this.counterService.signal$.pipe(
+    filter((signal: RadioSignal) => signal.signature === RadioSignature.SECRET),
+    map((signal: RadioSignal) => signal.value),
     distinctUntilChanged(),
     tap((message: number) => (this.radioMessage = message))
   );
@@ -25,7 +36,15 @@ export class AppComponent implements OnInit, OnDestroy {
       tap(console.log)
     );
 
-  constructor(private counterService: CounterService) {
+  transmissionLogs$: Observable<string[]> = this.loggingService.log$.pipe(
+    filter((value) => !!value),
+    startWith([])
+  );
+
+  constructor(
+    private counterService: CounterService,
+    private loggingService: LoggingService
+  ) {
     this.fromService = this.counterService.valueFromService;
 
     // this.counterService.signal$.subscribe(console.log);
